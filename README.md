@@ -7,7 +7,7 @@ A production-ready deployment of the Wanderlust MERN travel blog application on 
 ## 🏗️ Architecture
 
 ```
-Developer → GitHub Actions (CI) → Docker Hub → GitHub (manifests)
+Developer → GitHub Actions (CI) → ECS → GitHub (manifests)
                                                       ↓
                                                    ArgoCD
                                                       ↓
@@ -125,7 +125,7 @@ kubectl get svc -n wanderlust
 ### Continuous Integration (GitHub Actions)
 On every push to `main`:
 1. Builds Docker images for frontend and backend
-2. Pushes images to Docker Hub with updated tags
+2. Pushes images to ECS with updated tags
 3. Updates the Helm values with the new image tag
 
 ### Continuous Delivery (ArgoCD)
