@@ -1,0 +1,43 @@
+# ============================================================
+# configmap.yaml
+# ConfigMaps store NON-sensitive configuration as key-value pairs.
+# Think of it as a .env file but stored inside Kubernetes.
+#
+# Rule of thumb:
+#   Sensitive (passwords, tokens) → Secret
+#   Non-sensitive (URLs, ports, flags) → ConfigMap
+#
+# ⚠️  FRONTEND_URL will need to be updated AFTER you get
+#     your ALB URL in Phase 5. We'll use a placeholder now.
+# ============================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: wanderlust
+data:
+  # MongoDB connection string
+  # "mongo-service" is the name of our MongoDB K8s Service
+  # Kubernetes resolves service names to IPs automatically
+  MONGODB_URI: "mongodb://mongo-service/wanderlust"
+
+  # Redis connection string
+  # "redis-service" is the name of our Redis K8s Service
+  REDIS_URL: "redis://redis-service:6379"
+
+  # Port the backend listens on
+  PORT: "8080"
+
+  # ⚠️  UPDATE THIS after Phase 5 when you get your ALB URL
+  # Format will be: http://your-alb-url.us-east-1.elb.amazonaws.com
+  FRONTEND_URL: "http://PLACEHOLDER_UPDATE_AFTER_ALB"
+
+  # Token expiry settings
+  ACCESS_COOKIE_MAXAGE: "120000"
+  ACCESS_TOKEN_EXPIRES_IN: "120s"
+  REFRESH_COOKIE_MAXAGE: "120000"
+  REFRESH_TOKEN_EXPIRES_IN: "120s"
+
+  # Environment
+  NODE_ENV: "Development"

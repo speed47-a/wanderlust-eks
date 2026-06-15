@@ -1,0 +1,63 @@
+# ============================================================
+# redis/redis.yaml
+# Redis is an in-memory cache used by the backend.
+# It's stateless enough that we don't need persistent storage —
+# if Redis restarts, the cache just rebuilds itself.
+# ============================================================
+
+# ── Deployment ───────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: wanderlust
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.0.5-alpine   # same version as docker-compose, alpine = smaller image
+          ports:
+            - containerPort: 6379
+
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+
+          # Redis healthcheck — K8s will restart the pod if this fails
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+---
+# ── Service ──────────────────────────────────────────────────
+# Backend connects to Redis using: redis://redis-service:6379
+# which matches the REDIS_URL in our ConfigMap
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: wanderlust
+spec:
+  type: ClusterIP
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
