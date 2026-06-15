@@ -51,7 +51,7 @@ spec:
           # ⚠️  Replace YOUR_ACCOUNT_ID with your actual AWS account ID
           image: 015331669121.dkr.ecr.us-east-1.amazonaws.com/wanderlust-frontend:latest
           ports:
-            - containerPort: 5173
+            - containerPort: 80
 
           # Load frontend env vars from its own ConfigMap
           envFrom:
@@ -69,14 +69,14 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-              port: 5173
+              port: 80
             initialDelaySeconds: 20
             periodSeconds: 10
 
           livenessProbe:
             httpGet:
               path: /
-              port: 5173
+              port: 80
             initialDelaySeconds: 30
             periodSeconds: 20
 
@@ -88,12 +88,12 @@ metadata:
   name: frontend-service
   namespace: wanderlust
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: frontend
   ports:
-    - port: 5173
-      targetPort: 5173
+    - port: 80
+      targetPort: 80
       protocol: TCP
 
 ---
