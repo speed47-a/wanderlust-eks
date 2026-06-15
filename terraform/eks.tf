@@ -130,13 +130,14 @@ resource "aws_ecr_lifecycle_policy" "backend" {
       action = { type = "expire" }
     }]
   })
-  resource "aws_security_group_rule" "eks_http" {
+}
+resource "aws_security_group_rule" "eks_http" {
   type              = "ingress"
   from_port         = 80
   to_port           = 80
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = <your_eks_node_sg_id>
+  security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
 }
 resource "aws_security_group_rule" "eks_https" {
   type              = "ingress"
@@ -144,6 +145,5 @@ resource "aws_security_group_rule" "eks_https" {
   to_port           = 443
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = <your_eks_node_sg_id>
-}
+  security_group_id = aws_eks_cluster.main.vpc_config[0].cluster_security_group_id
 }
