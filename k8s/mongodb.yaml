@@ -1,20 +1,3 @@
-# ============================================================
-# mongodb/mongodb.yaml
-# MongoDB is our database. It needs:
-#   1. A Deployment to run the MongoDB pod
-#   2. A PVC (PersistentVolumeClaim) for storing data
-#      → On EKS this automatically creates an EBS volume
-#   3. A Service so backend can reach it by name
-#
-# Why ClusterIP?
-# MongoDB should NEVER be reachable from outside the cluster.
-# ClusterIP means only pods inside the cluster can reach it.
-# ============================================================
-
-# ── PersistentVolumeClaim ────────────────────────────────────
-# This requests storage from AWS EBS automatically.
-# No need to manually create PersistentVolumes on EKS —
-# the "gp2" StorageClass handles that for us.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -22,14 +5,12 @@ metadata:
   namespace: wanderlust
 spec:
   accessModes:
-    - ReadWriteOnce       # one node can read/write at a time (fine for MongoDB)
-  storageClassName: gp2   # AWS EBS General Purpose SSD — auto-provisioned on EKS
+    - ReadWriteOnce       
+  storageClassName: gp2   
   resources:
     requests:
-      storage: 5Gi        # 5GB EBS volume (~$0.50/month)
-
+      storage: 5Gi        
 ---
-# ── Deployment ───────────────────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,7 +19,7 @@ metadata:
   labels:
     app: mongo
 spec:
-  replicas: 1             # only 1 MongoDB replica (stateful apps need special handling for multiple)
+  replicas: 1             
   selector:
     matchLabels:
       app: mongo
@@ -49,11 +30,9 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: mongo:7.0   # pinned version, never use :latest in production
+          image: mongo:7.0   
           ports:
             - containerPort: 27017
-
-          # Resource limits — prevents MongoDB from eating all node memory
           resources:
             requests:
               memory: "256Mi"
@@ -61,21 +40,14 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
-
           volumeMounts:
             - name: mongo-storage
-              mountPath: /data/db   # where MongoDB stores its data inside the container
-
+              mountPath: /data/db   
       volumes:
         - name: mongo-storage
           persistentVolumeClaim:
-            claimName: mongo-pvc   # use the PVC we defined above
-
+            claimName: mongo-pvc   
 ---
-# ── Service ──────────────────────────────────────────────────
-# ClusterIP = only reachable inside the cluster
-# The backend connects to MongoDB using the service name: "mongo-service"
-# Kubernetes DNS resolves "mongo-service" → the pod's IP automatically
 apiVersion: v1
 kind: Service
 metadata:

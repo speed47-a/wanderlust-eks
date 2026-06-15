@@ -1,8 +1,3 @@
-# ============================================================
-# backend/backend.yaml
-# ============================================================
-
-# ── Deployment ───────────────────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,13 +10,11 @@ spec:
   selector:
     matchLabels:
       app: backend
-
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
-
   template:
     metadata:
       labels:
@@ -32,18 +25,15 @@ spec:
           image: 015331669121.dkr.ecr.us-east-1.amazonaws.com/wanderlust-backend:latest
           ports:
             - containerPort: 8080
-
           envFrom:
             - configMapRef:
                 name: backend-config
-
           env:
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: wanderlust-secret
                   key: JWT_SECRET
-
           resources:
             requests:
               memory: "128Mi"
@@ -51,23 +41,17 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "300m"
-
-          # Using TCP probe instead of HTTP
-          # Just checks if port 8080 is open — doesn't care about response code
           readinessProbe:
             tcpSocket:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
-
           livenessProbe:
             tcpSocket:
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 20
-
 ---
-# ── Service ──────────────────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
@@ -81,9 +65,7 @@ spec:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-
 ---
-# ── HorizontalPodAutoscaler ──────────────────────────────────
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:

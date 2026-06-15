@@ -1,42 +1,33 @@
 name: CI - Build and Push to ECR
-
 on:
   push:
     branches:
       - master
-
-# ✅ This grants the built-in token write access to the repo
 permissions:
   contents: write
-
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   ECR_BACKEND: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/wanderlust-backend
   ECR_FRONTEND: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/wanderlust-frontend
-
 jobs:
   build-and-push:
     name: Build and Push Images
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # ✅ checkout with write token
-
+          token: ${{ secrets.GITHUB_TOKEN }}  
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
       - name: Build and push backend image
         run: |
           IMAGE_TAG=${{ github.sha }}

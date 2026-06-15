@@ -1,49 +1,18 @@
-# ============================================================
-# ingress.yaml
-# The Ingress is the "traffic director" for our cluster.
-# It creates an AWS Application Load Balancer (ALB) that:
-#   - Accepts traffic from the internet on port 80
-#   - Routes /api/* requests → backend-service
-#   - Routes everything else → frontend-service
-#
-# The AWS Load Balancer Controller (installed via Helm in Phase 5)
-# watches for Ingress resources and automatically creates
-# the ALB in AWS based on the annotations below.
-#
-# After applying this, run:
-#   kubectl get ingress -n wanderlust
-# to get your ALB URL — it takes 2-3 minutes to provision.
-# ============================================================
-
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: wanderlust-ingress
   namespace: wanderlust
   annotations:
-    # Tell K8s to use the AWS Load Balancer Controller
     kubernetes.io/ingress.class: alb
-
-    # "internet-facing" = public ALB (accessible from internet)
-    # "internal" = private ALB (only inside VPC)
     alb.ingress.kubernetes.io/scheme: internet-facing
-
-    # Use IP mode — routes directly to pod IPs (better performance)
     alb.ingress.kubernetes.io/target-type: ip
-
-    # Health check path — ALB pings this to know if pods are healthy
     alb.ingress.kubernetes.io/healthcheck-path: /
-
-    # Listen on port 80 (HTTP)
-    # In production you'd add 443 (HTTPS) with a certificate
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
-
 spec:
   rules:
     - http:
         paths:
-          # API traffic → backend
-          # Any request starting with /api goes to the backend service
           - path: /api
             pathType: Prefix
             backend:
@@ -51,9 +20,6 @@ spec:
                 name: backend-service
                 port:
                   number: 8080
-
-          # Everything else → frontend
-          # The React app handles its own client-side routing
           - path: /
             pathType: Prefix
             backend:
